@@ -87,7 +87,6 @@ cdk bootstrap aws://ACCOUNT-NUMBER/REGION
 cdk diff
 ```
 - [ ] Reviewed all resources to be created
-- [ ] Verified Aurora PostgreSQL version is 16.6
 - [ ] Verified domain and certificate configuration
 - [ ] No unexpected changes shown
 
@@ -182,7 +181,7 @@ SELECT version();
 SELECT * FROM pg_extension WHERE extname = 'vector';
 SELECT usename FROM pg_user WHERE usename = 'rag';
 ```
-- [ ] PostgreSQL version is 16.6
+- [ ] PostgreSQL cluster is running
 - [ ] pgvector extension installed
 - [ ] rag user exists
 
@@ -254,7 +253,7 @@ If issues occur, check:
    - Review init-postgres Lambda logs
    - Check security group rules
    - Verify secrets in Secrets Manager
-   - See POSTGRES_UPGRADE.md troubleshooting
+   - See README.md troubleshooting section
 
 ## Success Criteria
 
@@ -271,7 +270,6 @@ Deployment is successful when:
 
 - **Main Documentation**: [README.md](README.md)
 - **ACM & Route53 Setup**: [ACM_ROUTE53_SETUP.md](ACM_ROUTE53_SETUP.md)
-- **Database Upgrade Guide**: [POSTGRES_UPGRADE.md](POSTGRES_UPGRADE.md)
 - **Changes Summary**: [CHANGES_SUMMARY.md](CHANGES_SUMMARY.md)
 
 ## Support

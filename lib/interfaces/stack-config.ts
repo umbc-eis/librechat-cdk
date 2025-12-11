@@ -9,6 +9,9 @@ export interface StackConfig {
     };
   };
   region: string;
+  database: {
+    postgresVersion: string;
+  };
   documentDb: {
     instanceType: string;
     instances: number;

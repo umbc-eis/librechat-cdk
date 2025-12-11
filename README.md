@@ -8,9 +8,6 @@ LibreChat is a chat application that can be deployed on AWS using ECS (Elastic C
 
 1. **[ACM_ROUTE53_SETUP.md](ACM_ROUTE53_SETUP.md)** - Set up SSL certificate and DNS (do this first!)
 2. **[README.md](README.md)** - Main deployment guide (this file)
-3. **[POSTGRES_UPGRADE.md](POSTGRES_UPGRADE.md)** - Database version information and upgrade guide (if upgrading)
-
-**Upgrading from PostgreSQL 15.5?** See [POSTGRES_UPGRADE.md](POSTGRES_UPGRADE.md)
 
 ## Architecture Overview
 
@@ -98,7 +95,43 @@ LibreChat is a chat application that can be deployed on AWS using ECS (Elastic C
    Update the following configuration files based on your requirements:
 
    a. **config/config.json**
-   - VPC Configuration
+   - **VPC Configuration**: Configure your Virtual Private Cloud settings
+     
+     **Example - Create New VPC**:
+     ```json
+     "vpc": {
+       "useExisting": false,
+       "existingVpcId": "",
+       "newVpc": {
+         "maxAzs": 2,
+         "natGateways": 1,
+         "cidr": "10.0.0.0/16"
+       }
+     }
+     ```
+     This creates a VPC with:
+     - CIDR block: `10.0.0.0/16` (65,536 IP addresses)
+     - 2 Availability Zones for high availability
+     - 1 NAT Gateway for cost optimization (use 2+ for production)
+     - Public subnets: `10.0.0.0/24`, `10.0.1.0/24`
+     - Private subnets: `10.0.128.0/24`, `10.0.129.0/24`
+     
+     **Example - Use Existing VPC**:
+     ```json
+     "vpc": {
+       "useExisting": true,
+       "existingVpcId": "vpc-0123456789abcdef0",
+       "newVpc": {}
+     }
+     ```
+   
+   - **Database Configuration**: PostgreSQL version for Aurora
+     ```json
+     "database": {
+       "postgresVersion": "16.6"
+     }
+     ```
+   
    - Region settings (must match ACM certificate region)
    - Container images
    - Database configurations
@@ -210,33 +243,22 @@ LibreChat is a chat application that can be deployed on AWS using ECS (Elastic C
 
 ## Important Notes
 
-1. **Aurora PostgreSQL Version**
-   - This stack uses **Aurora PostgreSQL 16.6** (upgraded from 15.5)
-   - PostgreSQL 16.6 provides improved performance, better query optimization, and enhanced security features
-   - The pgvector extension (used for RAG API) is fully compatible with PostgreSQL 16.6
-   - **Compatibility:** All initialization scripts and database constructs have been verified for PostgreSQL 16.6
-   - **Migration Note:** If upgrading from an existing deployment with PostgreSQL 15.5:
-     - Aurora supports in-place major version upgrades
-     - Test thoroughly in a non-production environment first
-     - Review [AWS Aurora PostgreSQL upgrade documentation](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/USER_UpgradeDBInstance.PostgreSQL.html)
-     - Consider using Blue/Green deployments for zero-downtime upgrades
-
-2. **HTTP vs HTTPS**
+1. **HTTP vs HTTPS**
    - **HTTPS (Recommended)**: If domain and certificate ARN are configured, the application will be deployed with HTTPS (port 443)
    - **HTTP (Development Only)**: Without domain configuration, the application will use HTTP (port 80)
    - For production deployments, always use HTTPS with a valid ACM certificate
 
-3. **Domain and SSL Certificate Requirements**
+2. **Domain and SSL Certificate Requirements**
    - ACM certificate **must be in the same AWS region** as your CDK deployment
    - Certificate must be in "Issued" status before deployment
    - Domain name in config.json must exactly match the certificate domain
    - Route53 A record must be created **after** deployment using the ALB DNS from CDK outputs
 
-4. **Docker Requirements**
+3. **Docker Requirements**
    - Ensure Docker Desktop is running before deployment
    - The CDK stack uses Docker for lambda layer configuration
 
-5. **Cost Considerations**
+4. **Cost Considerations**
    - The deployment includes:
      - **DocumentDB cluster** (MongoDB-compatible)
      - **Aurora PostgreSQL serverless v2 cluster** (2-16 ACU capacity)
@@ -248,7 +270,7 @@ LibreChat is a chat application that can be deployed on AWS using ECS (Elastic C
    - Review the [AWS pricing calculator](https://calculator.aws/) for estimated costs
    - Consider using AWS Cost Explorer and setting up billing alerts
 
-6. **Security Best Practices**
+5. **Security Best Practices**
    - All databases are deployed in private subnets with no public access
    - Secrets are stored in AWS Secrets Manager (never hardcoded)
    - Security groups restrict traffic to VPC CIDR only
@@ -276,15 +298,7 @@ LibreChat is a chat application that can be deployed on AWS using ECS (Elastic C
      - Verify security group rules allow traffic from ECS tasks to databases
      - Ensure database secrets are properly configured in Secrets Manager
 
-2. **Database Version Compatibility**
-   - **pgvector Extension**: Fully supported in PostgreSQL 16.6
-   - **psycopg2 Driver**: Compatible with all PostgreSQL 16.x versions
-   - **Initialization Scripts**: Tested and verified with PostgreSQL 16.6
-   - If you encounter extension compatibility issues, check:
-     - CloudWatch Logs for the init-postgres Lambda function
-     - Aurora PostgreSQL version compatibility matrix in AWS documentation
-
-3. **Logs and Monitoring**
+2. **Logs and Monitoring**
    - **CloudWatch Logs** for container logs:
      - `/aws/ecs/librechat-service` - LibreChat application logs
      - `/aws/ecs/meilisearch-service` - Meilisearch logs
@@ -313,7 +327,7 @@ cdk destroy --all
 
 ## Database Architecture
 
-### Aurora PostgreSQL (Version 16.6)
+### Aurora PostgreSQL
 - **Purpose**: RAG API vector storage using pgvector extension
 - **Configuration**: Serverless v2 with auto-scaling (2-16 ACU)
 - **Extensions**: pgvector for embeddings storage
@@ -330,18 +344,9 @@ cdk destroy --all
   - Sets up required collections
   - Configures authentication
 
-### Version Compatibility Matrix
-| Component | Version | Status | Notes |
-|-----------|---------|--------|-------|
-| Aurora PostgreSQL | 16.6 | ✅ Current | Upgraded from 15.5 |
-| pgvector Extension | Latest | ✅ Compatible | Supports PostgreSQL 16.x |
-| psycopg2 Driver | 2.9.x | ✅ Compatible | Python database adapter |
-| DocumentDB | 5.0 | ✅ Current | MongoDB 5.0 compatible |
-
 ## Support and Resources
 
 - [LibreChat Documentation](https://docs.librechat.ai)
 - [AWS CDK Documentation](https://docs.aws.amazon.com/cdk/)
-- [Aurora PostgreSQL Release Notes](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraPostgreSQLReleaseNotes/AuroraPostgreSQL.Updates.html)
 - [AWS Certificate Manager Documentation](https://docs.aws.amazon.com/acm/)
 - [Route53 Documentation](https://docs.aws.amazon.com/route53/)

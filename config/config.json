@@ -23,6 +23,9 @@
       "tag": "latest"
     }
   },
+  "database": {
+    "postgresVersion": "16.6"
+  },
   "documentDb": {
     "instanceType": "t3.medium",
     "instances": 1
