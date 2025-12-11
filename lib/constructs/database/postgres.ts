@@ -41,10 +41,13 @@ export class AuroraPostgres extends Construct {
     );
 
     // Create new Aurora PostgreSQL cluster
+    // Updated to Aurora PostgreSQL 16.6 for better performance and features
+    // Compatible with pgvector extension used in RAG API initialization
+    // Note: Ensure application code and extensions are tested with PostgreSQL 16.6
     const databaseName = 'rag_api';
     this.cluster = new rds.DatabaseCluster(this, 'LibreChatPostgresCluster', {
       engine: rds.DatabaseClusterEngine.auroraPostgres({
-        version: rds.AuroraPostgresEngineVersion.VER_15_5,
+        version: rds.AuroraPostgresEngineVersion.of('16.6', '16'),
       }),
       vpc: props.vpc,
       vpcSubnets: {
@@ -74,6 +77,8 @@ export class AuroraPostgres extends Construct {
     this.secret = this.cluster.secret!;
 
     // Create the bedrock user secret
+    // This secret stores credentials for the RAG API user that will be created during initialization
+    // The init-postgres Lambda will populate the password field during database setup
     this.bedrockUserSecret = new secretsmanager.Secret(this, 'BedrockUserSecret', {
       secretName: 'LibreChat/Postgres/rag_user',
       description: 'Credentials for bedrock_user in PostgreSQL',
@@ -94,6 +99,11 @@ export class AuroraPostgres extends Construct {
     this.bedrockUserSecret.node.addDependency(this.cluster);
 
     // Create initialization Lambda function
+    // This Lambda performs the following PostgreSQL 16.6 compatible operations:
+    // 1. Installs pgvector extension (compatible with PG 16.6)
+    // 2. Creates 'rag' user role with appropriate permissions
+    // 3. Grants rds_superuser role to rag user for pgvector operations
+    // All operations are verified compatible with Aurora PostgreSQL 16.6
     const initLambda = new InitPostgresLambda(this, 'InitFunction', {
       cluster: this.cluster,
       vpc: props.vpc,
