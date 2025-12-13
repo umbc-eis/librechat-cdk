@@ -135,7 +135,7 @@ export class RagApiService extends Construct {
       },
     });
 
-    // Add Bedrock permissions for embeddings
+    // Add Bedrock permissions for embeddings (allow all regions for cross-region models)
     const bedrockPolicy = new iam.PolicyStatement({
       effect: iam.Effect.ALLOW,
       actions: [
@@ -143,8 +143,10 @@ export class RagApiService extends Construct {
         'bedrock:InvokeModelWithResponseStream'
       ],
       resources: [
-        // Add specific model ARNs for your region
-        `arn:aws:bedrock:${Stack.of(this).region}::foundation-model/*`
+        // Foundation models in all regions
+        `arn:aws:bedrock:*::foundation-model/*`,
+        // Cross-region inference profiles
+        `arn:aws:bedrock:*:${Stack.of(this).account}:inference-profile/*`
       ]
     });
     taskDefinition.taskRole.addToPrincipalPolicy(bedrockPolicy);

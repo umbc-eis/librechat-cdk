@@ -34,8 +34,8 @@ cdk deploy --all
 - **Application Load Balancer** - HTTPS traffic distribution with SSL termination
 
 ### Databases
-- **Aurora PostgreSQL Serverless v2** - Vector storage with pgvector (0.5-16 ACU)
-- **DocumentDB** - MongoDB-compatible database for LibreChat data
+- **Aurora PostgreSQL Serverless v2** - Vector storage with pgvector (0.5-16 ACU, version 16.6)
+- **DocumentDB 5.0** - MongoDB-compatible database for LibreChat data
 
 ### Storage & Networking
 - **EFS** - Shared file system for persistent data
@@ -70,7 +70,7 @@ Use `config.local.json` for your personal settings (Git-ignored):
 }
 ```
 
-This overrides `config.json` template values automatically.
+This deep-merges with `config.json` template values automatically. You only need to specify what you want to override.
 
 ### Key Configuration Options
 
@@ -78,9 +78,11 @@ This overrides `config.json` template values automatically.
 |---------|-------------|---------|
 | `region` | AWS deployment region | `us-west-2` |
 | `vpc.useExisting` | Use existing VPC | `false` |
+| `aurora.engineVersion` | PostgreSQL version | `16.6` |
 | `aurora.minCapacity` | Min Aurora ACUs | `0.5` |
 | `aurora.maxCapacity` | Max Aurora ACUs | `16` |
 | `documentDb.instanceType` | DocumentDB instance | `t4g.medium` |
+| `documentDb.engineVersion` | DocumentDB version | `5.0.0` |
 | `domain.name` | Your domain name | Required for HTTPS |
 | `domain.certificateArn` | ACM certificate ARN | Required for HTTPS |
 

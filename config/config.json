@@ -23,12 +23,10 @@
       "tag": "latest"
     }
   },
-  "database": {
-    "postgresVersion": "16.6"
-  },
   "documentDb": {
-    "instanceType": "t3.medium",
-    "instances": 1
+    "instanceType": "t4g.medium",
+    "instances": 1,
+    "engineVersion": "5.0.0"
   },
   "aurora": {
     "engine": "aurora-postgresql",

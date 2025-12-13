@@ -110,7 +110,7 @@ export class AuroraPostgres extends Construct {
     initLambda.handler.node.addDependency(this.bedrockUserSecret);
 
     // Create custom resource to trigger Lambda after cluster creation
-    new custom_resources.AwsCustomResource(this, 'InitPostgres', {
+    const customResource = new custom_resources.AwsCustomResource(this, 'InitPostgres', {
       onCreate: {
         service: 'Lambda',
         action: 'invoke',
@@ -128,5 +128,8 @@ export class AuroraPostgres extends Construct {
         })
       ])
     });
+    
+    // Ensure custom resource is created after Lambda function
+    customResource.node.addDependency(initLambda.handler);
   }
 }
