@@ -53,6 +53,7 @@ export class LibreChatCdkStack extends cdk.Stack {
         const postgres = new AuroraPostgres(this, 'PostgresDatabase', {
             vpc: this.vpc,
             instanceType: ec2.InstanceType.of(ec2.InstanceClass.T3, ec2.InstanceSize.MEDIUM),
+            postgresVersion: props.config.aurora.engineVersion,
         });
 
         // Create DocumentDB - Parse instance class and size from config
@@ -70,6 +71,7 @@ export class LibreChatCdkStack extends cdk.Stack {
             vpc: this.vpc,
             instanceType: instanceType,
             instances: props.config.documentDb.instances,
+            engineVersion: props.config.documentDb.engineVersion,
         });
 
         // Create ECS Cluster

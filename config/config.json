@@ -24,8 +24,9 @@
     }
   },
   "documentDb": {
-    "instanceType": "t3.medium",
-    "instances": 1
+    "instanceType": "t4g.medium",
+    "instances": 1,
+    "engineVersion": "5.0.0"
   },
   "aurora": {
     "engine": "aurora-postgresql",
@@ -54,7 +55,10 @@
     }
   },
   "domain": {
-    "name": "your-domain.com",
-    "certificateArn": "arn:aws:acm:region:account:certificate/certificate-id"
+    "name": "librechat.example.com",
+    "certificateArn": "arn:aws:acm:us-west-2:123456789012:certificate/abcd1234-5678-90ef-ghij-klmnopqrstuv",
+    "_comment_name": "REQUIRED: Your domain name (e.g., librechat.example.com). Must match the ACM certificate domain.",
+    "_comment_certificateArn": "REQUIRED: ACM certificate ARN in the same region as deployment. See README for creation steps.",
+    "_comment_route53": "IMPORTANT: After deployment, create a Route53 A record alias pointing your domain to the ALB DNS (shown in CDK outputs)."
   }
 }

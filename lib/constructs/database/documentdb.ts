@@ -14,6 +14,7 @@ interface DocumentDBProps {
   vpc: ec2.IVpc;
   instanceType?: ec2.InstanceType;
   instances?: number;
+  engineVersion?: string;
 }
 
 export class DocumentDB extends Construct {
@@ -46,6 +47,7 @@ export class DocumentDB extends Construct {
       vpcSubnets: {
         subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS,
       },
+      engineVersion: props.engineVersion || '5.0.0',
       instanceType: props.instanceType || ec2.InstanceType.of(ec2.InstanceClass.R6G, ec2.InstanceSize.LARGE),
       instances: props.instances || 1,
       securityGroup: dbSecurityGroup,
@@ -103,7 +105,7 @@ export class DocumentDB extends Construct {
     initLambda.handler.node.addDependency(this.libreChatUserSecret);
 
     // Create custom resource to trigger Lambda
-    new custom_resources.AwsCustomResource(this, 'InitDocumentDB', {
+    const customResource = new custom_resources.AwsCustomResource(this, 'InitDocumentDB', {
       onCreate: {
         service: 'Lambda',
         action: 'invoke',
@@ -121,5 +123,8 @@ export class DocumentDB extends Construct {
       })
     ])
     });
+    
+    // Ensure custom resource is created after Lambda function
+    customResource.node.addDependency(initLambda.handler);
   }
 }

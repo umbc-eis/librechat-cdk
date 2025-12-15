@@ -9,8 +9,8 @@ export type Config = Readonly<{
     };
     vpc: {
         useExisting: boolean;
-        existingVpcId: string | '';  // Allow empty string when not using existing VPC
-        newVpc: {
+        existingVpcId?: string;  // Optional when not using existing VPC
+        newVpc?: {
             maxAzs: number;
             natGateways: number;
             cidr: string;
@@ -30,13 +30,13 @@ export type Config = Readonly<{
             backupWindow: string;
             maintenanceWindow: string;
             deletionProtection: boolean;
-            monitoring: {
+            monitoring?: {
                 enableEnhancedMonitoring: boolean;
                 monitoringInterval: number;
                 logsExports: string[];
                 logsRetentionDays: number;
             };
-            tags: {
+            tags?: {
                 [key: string]: string;
             };
         };
@@ -58,13 +58,14 @@ export type Config = Readonly<{
     documentDb: {
         instanceType: string;
         instances: number;
+        engineVersion: string;
     };
 }>;
 
 export interface VpcConstructProps {
     useExisting: boolean;
-    existingVpcId: string;
-    newVpc: {
+    existingVpcId?: string;
+    newVpc?: {
       maxAzs: number;
       natGateways: number;
       cidr: string;

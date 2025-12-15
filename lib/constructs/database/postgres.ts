@@ -13,6 +13,7 @@ import * as iam from 'aws-cdk-lib/aws-iam';
 interface AuroraPostgresProps {
   vpc: ec2.IVpc;
   instanceType?: ec2.InstanceType;
+  postgresVersion: string;
 }
 
 export class AuroraPostgres extends Construct {
@@ -44,7 +45,7 @@ export class AuroraPostgres extends Construct {
     const databaseName = 'rag_api';
     this.cluster = new rds.DatabaseCluster(this, 'LibreChatPostgresCluster', {
       engine: rds.DatabaseClusterEngine.auroraPostgres({
-        version: rds.AuroraPostgresEngineVersion.VER_15_5,
+        version: rds.AuroraPostgresEngineVersion.of(props.postgresVersion, props.postgresVersion.split('.')[0]),
       }),
       vpc: props.vpc,
       vpcSubnets: {
@@ -74,6 +75,8 @@ export class AuroraPostgres extends Construct {
     this.secret = this.cluster.secret!;
 
     // Create the bedrock user secret
+    // This secret stores credentials for the RAG API user that will be created during initialization
+    // The init-postgres Lambda will populate the password field during database setup
     this.bedrockUserSecret = new secretsmanager.Secret(this, 'BedrockUserSecret', {
       secretName: 'LibreChat/Postgres/rag_user',
       description: 'Credentials for bedrock_user in PostgreSQL',
@@ -107,7 +110,7 @@ export class AuroraPostgres extends Construct {
     initLambda.handler.node.addDependency(this.bedrockUserSecret);
 
     // Create custom resource to trigger Lambda after cluster creation
-    new custom_resources.AwsCustomResource(this, 'InitPostgres', {
+    const customResource = new custom_resources.AwsCustomResource(this, 'InitPostgres', {
       onCreate: {
         service: 'Lambda',
         action: 'invoke',
@@ -125,5 +128,8 @@ export class AuroraPostgres extends Construct {
         })
       ])
     });
+    
+    // Ensure custom resource is created after Lambda function
+    customResource.node.addDependency(initLambda.handler);
   }
 }

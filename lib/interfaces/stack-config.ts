@@ -12,8 +12,23 @@ export interface StackConfig {
   documentDb: {
     instanceType: string;
     instances: number;
+    engineVersion: string;
   };
-  aurora?: {
+  container: {
+    libreChatImage: {
+      repository: string;
+      tag: string;
+    };
+    meiliSearchImage: {
+      repository: string;
+      tag: string;
+    };
+    ragAPIImage: {
+      repository: string;
+      tag: string;
+    };
+  };
+  aurora: {
     engine: string;
     engineVersion: string;
     instanceClass: string;
@@ -36,7 +51,7 @@ export interface StackConfig {
       tags?: Record<string, string>;
     };
   };
-  domain?: {
+  domain: {
     name: string;
     certificateArn: string;
   };

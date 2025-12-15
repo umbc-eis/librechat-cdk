@@ -5,6 +5,14 @@ import psycopg2
 from datetime import datetime
 
 def handler(event, context):
+    """
+    Initialize Aurora PostgreSQL database for LibreChat RAG API.
+    
+    This function performs the following operations:
+    1. Installs pgvector extension
+    2. Creates 'rag' user role with necessary permissions
+    3. Grants rds_superuser privileges for vector operations
+    """
     try:
         print("Starting PostgreSQL initialization...")
         
@@ -41,7 +49,7 @@ def handler(event, context):
 
             # Create database objects
             with conn.cursor() as cur:
-                #Install pgvector extension (as master user)
+                # Install pgvector extension (as master user)
                 cur.execute("CREATE EXTENSION IF NOT EXISTS vector;")
                 print("Created pgvector extension")
 

@@ -60,3 +60,8 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 temp_docs/
+
+# Local configuration overrides (for testing)
+config/config.local.json
+config/Libre_config/*.local.*
+S3_downloaded_*
